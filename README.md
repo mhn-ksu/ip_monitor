@@ -19,20 +19,44 @@ A Launch Agent is used instead of a cron on MacOS because:
 
 ## Load the LaunchAgent
 
-    launchctl load ~/Library/LaunchAgents/com.user.ipmonitor.plist
+    launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.user.ipmonitor.plist
 
-## Stop the service
+## Start/enable the service
+    launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.user.ipmonitor.plist
 
-    launchctl unload ~/Library/LaunchAgents/com.use.ipmonitor.plist
-
-## Start the service
-
-    launchctl load ~/Library/LaunchAgents/com.user.ipmonitor.plist
+## Stop/disable the service
+    launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/com.user.ipmonitor.plist
 
 ## Check if it's running
-
     launchctl list | grep ipmonitor
+
+## Kick it manually (if already loaded)
+    launchctl kickstart gui/$(id -u)/com.user.ipmonitor
 
 ## View logs
 
     tail -f /tmp/ipmonitor.log /tmp/ipmonitor.err
+
+# Troubleshooting
+Make sure the plist file path is correct. Verify with:
+
+    ls -la ~/Library/LaunchAgents/com.user.ipmonitor.plist
+
+Verify you updated the user name in the plist.
+
+Check plist syntax
+
+    plutil -lint ~/Library/LaunchAgents/com.user.ipmonitor.plist
+
+Ensure the script is executable:
+
+    chmod +x ip_monitor
+
+If you still get errors after `bootstrap`, run:
+
+    launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.user.ipmonitor.plist 2>&1
+
+This will show the actual error message, which will help troubleshoot the
+issue.
+
+
