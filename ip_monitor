@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# vim: ft=bash
+
+set -x
+
+# File to store previous IP
+IP_FILE="$HOME/.current_ip"
+
+# Get current local IP (adjust interface if needed)
+CURRENT_IP=$(ipconfig getifaddr en0)
+
+# Fallback if en0 doesn’t work (e.g., on Ethernet it might be en1 or enX)
+if [ -z "$CURRENT_IP" ]; then
+  CURRENT_IP=$(ipconfig getifaddr en1)
+fi
+
+# Read stored IP
+if [ -f "$IP_FILE" ]; then
+  STORED_IP=$(cat "$IP_FILE")
+else
+  STORED_IP=""
+fi
+
+# Compare and notify
+if [ "$CURRENT_IP" != "$STORED_IP" ]; then
+  echo "$CURRENT_IP" > "$IP_FILE"
+
+  # Create and save a draft email with the IP address
+  osascript <<EOF
+tell application "Mail"
+    set newMessage to make new outgoing message with properties {subject:"Desktop IP Changed", content:"The new IP address is $CURRENT_IP", visible:true}
+    tell newMessage
+        make new to recipient at end of to recipients with properties {address:"mhn@ksu.edu"}
+    end tell
+end tell
+EOF
+
+  
+  ## Option 1: Use mail (needs setup)
+  # echo "New IP address: $CURRENT_IP" | mail -s "Desktop IP Updated" you@example.com
+
+  ## Option 2: Use Pushover (or Pushbullet)
+  ## You'll need a user key and API token from pushover.net
+  # curl -s \
+  #   -F "token=YOUR_APP_TOKEN" \
+  #   -F "user=YOUR_USER_KEY" \
+  #   -F "message=Desktop IP changed: $CURRENT_IP" \
+  #   https://api.pushover.net/1/messages.json
+
+  ## Option 3: Use macOS notification (only works if you're logged in)
+  osascript -e "display notification \"IP changed to $CURRENT_IP\" with title \"IP Monitor\""
+fi
+set +x
