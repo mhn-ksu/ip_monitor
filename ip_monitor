@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 # vim: ft=bash
 
-set -x
-
 # File to store previous IP
 IP_FILE="$HOME/.current_ip"
 
@@ -50,4 +48,3 @@ EOF
   ## Option 3: Use macOS notification (only works if you're logged in)
   osascript -e "display notification \"IP changed to $CURRENT_IP\" with title \"IP Monitor\""
 fi
-set +x
