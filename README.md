@@ -12,11 +12,10 @@ A Launch Agent is used instead of a cron on MacOS because:
 - It persists across reboots
 
 # Managing the service
-The source for the plist is in `$HOME/code/launchAgent/ipmonitor/`.
 
 ## Copy the plist to `~/Library/LaunchAgents`
 
-    cp ~/code/launchAgent/ipmonitor/com.user.ipmoniot.plist ~/Library/LaunchAgents/com.user.ipmonitor.plist
+    cp ipmonitor/com.user.ipmonitor.plist ~/Library/LaunchAgents/com.user.ipmonitor.plist
 
 ## Load the LaunchAgent
 
