@@ -5,7 +5,7 @@
   <key>Label</key>
   <string>com.user.ipmonitor</string>
 
-  <key>ProgramArguments</jey>
+  <key>ProgramArguments</key>
   <array>
     <string>/Users/mhn/bin/bash/ip_monitor</string>
   </array>
