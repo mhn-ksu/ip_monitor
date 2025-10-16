@@ -33,18 +33,6 @@ tell application "Mail"
 end tell
 EOF
 
-  
-  ## Option 1: Use mail (needs setup)
-  # echo "New IP address: $CURRENT_IP" | mail -s "Desktop IP Updated" you@example.com
-
-  ## Option 2: Use Pushover (or Pushbullet)
-  ## You'll need a user key and API token from pushover.net
-  # curl -s \
-  #   -F "token=YOUR_APP_TOKEN" \
-  #   -F "user=YOUR_USER_KEY" \
-  #   -F "message=Desktop IP changed: $CURRENT_IP" \
-  #   https://api.pushover.net/1/messages.json
-
-  ## Option 3: Use macOS notification (only works if you're logged in)
+  # Post a notification
   osascript -e "display notification \"IP changed to $CURRENT_IP\" with title \"IP Monitor\""
 fi
