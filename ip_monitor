@@ -1,10 +1,16 @@
 #!/usr/bin/env bash
 # vim: ft=bash
 
-# File that holds the current IP. ~/Documents is synced by OneDrive, so the
-# value can be read from other machines. It also serves as the saved value
-# that the current IP is compared against.
-IP_FILE="$HOME/Documents/ip_address.txt"
+# Local file holding the last known IP, used for change detection. Kept out of
+# OneDrive so syncing can't interfere with the comparison.
+STATE_FILE="$HOME/.current_ip"
+
+# OneDrive-synced file that other machines read to find the current IP
+SHARED_FILE="$HOME/Documents/ip_address.txt"
+
+log() {
+  echo "$(date '+%Y-%m-%d %H:%M:%S') $*"
+}
 
 # Get current local IP (adjust interface if needed)
 CURRENT_IP=$(ipconfig getifaddr en0)
@@ -16,21 +22,28 @@ fi
 
 # Don't overwrite a good value with an empty one (e.g., network down)
 if [ -z "$CURRENT_IP" ]; then
-  echo "ip_monitor: could not determine current IP address" >&2
+  log "could not determine current IP address" >&2
   exit 1
 fi
 
 # Read stored IP
-if [ -f "$IP_FILE" ]; then
-  STORED_IP=$(head -n 1 "$IP_FILE")
+if [ -f "$STATE_FILE" ]; then
+  STORED_IP=$(head -n 1 "$STATE_FILE")
 else
   STORED_IP=""
 fi
 
 # Compare and notify
 if [ "$CURRENT_IP" != "$STORED_IP" ]; then
-  echo "$CURRENT_IP" > "$IP_FILE"
+  log "IP changed from '${STORED_IP}' to '${CURRENT_IP}'"
+  echo "$CURRENT_IP" > "$STATE_FILE"
+  echo "$CURRENT_IP" > "$SHARED_FILE"
 
   # Post a notification
   osascript -e "display notification \"IP changed to $CURRENT_IP\" with title \"IP Monitor\""
+elif [ "$(head -n 1 "$SHARED_FILE" 2>/dev/null)" != "$CURRENT_IP" ]; then
+  # IP is unchanged but the shared file is missing or different; repair it
+  # quietly without a notification.
+  log "shared file out of date; rewriting with '${CURRENT_IP}'"
+  echo "$CURRENT_IP" > "$SHARED_FILE"
 fi
