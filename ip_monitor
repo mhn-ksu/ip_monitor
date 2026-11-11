@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # vim: ft=bash
 
-# File to store previous IP
-IP_FILE="$HOME/.current_ip"
+# File that holds the current IP. ~/Documents is synced by OneDrive, so the
+# value can be read from other machines. It also serves as the saved value
+# that the current IP is compared against.
+IP_FILE="$HOME/Documents/ip_address.txt"
 
 # Get current local IP (adjust interface if needed)
 CURRENT_IP=$(ipconfig getifaddr en0)
@@ -12,9 +14,15 @@ if [ -z "$CURRENT_IP" ]; then
   CURRENT_IP=$(ipconfig getifaddr en1)
 fi
 
+# Don't overwrite a good value with an empty one (e.g., network down)
+if [ -z "$CURRENT_IP" ]; then
+  echo "ip_monitor: could not determine current IP address" >&2
+  exit 1
+fi
+
 # Read stored IP
 if [ -f "$IP_FILE" ]; then
-  STORED_IP=$(cat "$IP_FILE")
+  STORED_IP=$(head -n 1 "$IP_FILE")
 else
   STORED_IP=""
 fi
@@ -22,16 +30,6 @@ fi
 # Compare and notify
 if [ "$CURRENT_IP" != "$STORED_IP" ]; then
   echo "$CURRENT_IP" > "$IP_FILE"
-
-  # Create and save a draft email with the IP address
-  osascript <<EOF
-tell application "Mail"
-    set newMessage to make new outgoing message with properties {subject:"Desktop IP Changed", content:"The new IP address is $CURRENT_IP", visible:true}
-    tell newMessage
-        make new to recipient at end of to recipients with properties {address:"mhn@ksu.edu"}
-    end tell
-end tell
-EOF
 
   # Post a notification
   osascript -e "display notification \"IP changed to $CURRENT_IP\" with title \"IP Monitor\""

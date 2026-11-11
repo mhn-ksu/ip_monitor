@@ -1,14 +1,15 @@
 # ip_monitor
 This launch agent controls the periodic running of a bash script that checks
-the current IP address against a saved value. If the current IP address has
-changed, then an email is created and saved as a draft. This draft can be
-viewed on other computers with access to the email account, and the information
-used to adjust remote connections.
+the current IP address against the value saved in `~/Documents/ip_address.txt`.
+If the current IP address has changed, the file is updated with the new address
+and a notification is posted. Because `~/Documents` is synced by OneDrive, the
+file can be read on other computers, and the information used to adjust remote
+connections.
 
 A Launch Agent is used instead of a cron on MacOS because:
 - It works reliable across sleep/wake cycles
 - It's the Apple-recommended method
-- It runs in your user context (so Mail.app and notification work properly)
+- It runs in your user context (so file access and notifications work properly)
 - It persists across reboots
 
 # Managing the service
@@ -51,6 +52,11 @@ Check plist syntax
 Ensure the script is executable:
 
     chmod +x ip_monitor
+
+If `/tmp/ipmonitor.err` shows `Operation not permitted` when writing the file,
+macOS privacy protection is blocking access to `~/Documents`. Grant the bash
+binary the script runs under (`/bin/bash`, or Homebrew's bash if that is first
+on the PATH) Full Disk Access in System Settings → Privacy & Security.
 
 If you still get errors after `bootstrap`, run:
 
